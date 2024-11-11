@@ -1,4 +1,8 @@
+# Most of this code is based on the aws-iot-device-sdk-python-v2 sample available at
+# https://github.com/aws/aws-iot-device-sdk-python-v2/blob/main/samples/pubsub.py.
+
 import json
+import random
 import sys
 from datetime import datetime
 
@@ -34,7 +38,7 @@ def on_connection_closed(connection, callback_data):
     print("Connection closed")
 
 
-# Create MQTT5 client
+# Create a MQTT connection from the command line data
 mqtt_connection = mqtt_connection_builder.mtls_from_path(
     endpoint=endpoint,
     cert_filepath=certificate_filepath,
@@ -46,29 +50,30 @@ mqtt_connection = mqtt_connection_builder.mtls_from_path(
     on_connection_failure=on_connection_failure,
     on_connection_closed=on_connection_closed,
 )
-print("MQTT5 Client created")
 
-# Connect to the MQTT broker
+print(f"Connecting to {endpoint} with client ID '{device_name}'...")
 connect_future = mqtt_connection.connect()
+# Future.result() waits until a result is available
 connect_future.result()
-print("MQTT5 Client started")
 
 # Define the telemetry data
+temperature = random.uniform(23, 26)
 telemetry_data = {
     "device": device_name,
     "timestamp": datetime.now(tz=tzlocal.get_localzone()).strftime(
         "%Y-%m-%d %H:%M:%S%z"
     ),
-    "temperature": 25.1,
+    "temperature": temperature,
 }
 
 # Publish the telemetry data to a specific topic
 message_topic = f"$aws/things/{device_name}/telemetry"
+print(f"Publishing message with temperature {temperature} to topic {message_topic}")
 mqtt_connection.publish(
     topic=message_topic, payload=json.dumps(telemetry_data), qos=mqtt5.QoS.AT_LEAST_ONCE
 )
 
-# Disconnect from the MQTT broker
+# Disconnect
+print("Disconnecting...")
 disconnect_future = mqtt_connection.disconnect()
 disconnect_future.result()
-print("MQTT5 Client stopped")
