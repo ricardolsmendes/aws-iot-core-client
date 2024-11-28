@@ -67,7 +67,7 @@ telemetry_data = {
 }
 
 # Publish the telemetry data to a specific topic
-message_topic = f"$aws/things/{device_name}/telemetry"
+message_topic = f"$aws/things/{device_name}/data"
 print(f"Publishing message with temperature {temperature} to topic {message_topic}")
 mqtt_connection.publish(
     topic=message_topic, payload=json.dumps(telemetry_data), qos=mqtt5.QoS.AT_LEAST_ONCE
